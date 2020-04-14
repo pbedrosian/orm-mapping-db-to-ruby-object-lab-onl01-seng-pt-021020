@@ -41,10 +41,13 @@ class Student
 
   def self.students_below_12th_grade
     sql = <<-SQL
-      SELECT name FROM students
-      WHERE grade < 12
-    SQL
-    DB[:conn].execute(sql)
+    SELECT *
+    FROM students
+    WHERE grade < 12
+  SQL
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
   end
 
   def self.first_X_students_in_grade_10(num)
@@ -53,7 +56,21 @@ class Student
       WHERE grade = 10
       LIMIT ?
    SQL
-     DB[:conn].execute(sql, num)
+     DB[:conn].execute(sql, num).map do |row|
+      self.new_from_db(row)
+     end
+  end
+
+  def self.first_student_in_grade_10
+    sql = <<-SQL
+      SELECT id FROM students 
+      WHERE grade = 10
+      ORDER BY id
+      LIMIT 1
+    SQL
+    DB[:conn].execute(sql).each do |row|
+      self.new_from_db(row)
+     end.flatten
   end
   
   def save
